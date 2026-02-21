@@ -651,6 +651,15 @@
                     return;
                 }
 
+                // Validação dos nomes dos acompanhantes
+                const companionInputs = document.querySelectorAll('.companion-name-input');
+                if (Array.from(companionInputs).some(input => input.value.trim() === '')) {
+                    alert('Por favor, preencha o nome de todos os acompanhantes.');
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                    return;
+                }
+
                 btn.innerText = 'Salvando...';
                 const names = Array.from(document.querySelectorAll('.companion-name-input')).map(i => i.value).filter(n => n.trim() !== '');
                 const data = {
@@ -747,6 +756,14 @@
 
             editForm.onsubmit = async (e) => {
                 e.preventDefault();
+
+                // Validação dos nomes dos acompanhantes
+                const companionInputs = document.querySelectorAll('.companion-name-input-edit');
+                if (Array.from(companionInputs).some(input => input.value.trim() === '')) {
+                    alert('Por favor, preencha o nome de todos os acompanhantes.');
+                    return; // Impede o envio do formulário
+                }
+
                 const btn = editForm.querySelector('button[type="submit"]');
                 btn.innerText = 'Salvando...';
                 btn.disabled = true;
