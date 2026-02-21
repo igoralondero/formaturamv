@@ -805,13 +805,12 @@
             const input = document.getElementById('edit-input-' + id);
             if (!input) return;
             input.value = Math.max(0, (parseInt(input.value) || 0) + delta);
-            if (id === 'adultos') {
-                updateEditCompanionsList();
-            }
+            updateEditCompanionsList();
         }
 
         function updateEditCompanionsList(initialNames = []) {
             const adults = parseInt(document.getElementById('edit-input-adultos').value) || 0;
+            const children = parseInt(document.getElementById('edit-input-criancas').value) || 0;
             const container = document.getElementById('edit-companions-list');
             if (!container) return;
 
@@ -832,8 +831,24 @@
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.className = 'companion-name-input-edit w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white placeholder-white/30 text-sm mb-2';
-                    input.placeholder = `Acompanhante ${i + 1}`;
+                    input.placeholder = `Acompanhante Adulto ${i + 1}`;
                     input.value = existingValues[i] || '';
+                    container.appendChild(input);
+                }
+            }
+
+            if (children > 0) {
+                const label = document.createElement('label');
+                label.className = 'text-xs text-blue-200/50 block mb-2 mt-4';
+                label.innerText = 'Nome das crianças acompanhantes';
+                container.appendChild(label);
+
+                for (let i = 0; i < children; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'companion-name-input-edit w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white placeholder-white/30 text-sm mb-2';
+                    input.placeholder = `Criança ${i + 1}`;
+                    input.value = existingValues[adults + i] || '';
                     container.appendChild(input);
                 }
             }
