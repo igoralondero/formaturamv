@@ -698,22 +698,11 @@
             if (!savedData) return;
             const data = JSON.parse(savedData);
             
-            // Abre o modal de edição
             toggleEditModal(true);
 
-            // Popula o formulário do modal com os dados do 'data'
             const editForm = document.getElementById('edit-form');
             isEditAttending = data.comparecera === 'Sim';
             const isSim = data.comparecera === 'Sim';
-
-            let companionsHTML = '';
-            if (isSim) {
-                const names = (data.acompanhantes && data.acompanhantes !== 'Nenhum') ? data.acompanhantes.split(', ') : [];
-                const totalCompanions = Math.max(0, (parseInt(data.adultos) || 1) - 1);
-                for (let i = 0; i < totalCompanions; i++) {
-                    companionsHTML += `<input type="text" value="${names[i] || ''}" class="companion-name-input-edit w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white placeholder-white/30 text-sm mb-2" placeholder="Nome do acompanhante ${i + 1}">`;
-                }
-            }
 
             editForm.onsubmit = async (e) => {
                 e.preventDefault();
@@ -726,8 +715,8 @@
                 const names = Array.from(document.querySelectorAll('.companion-name-input-edit')).map(i => i.value).filter(n => n.trim() !== '');
                 const updatedData = {
                     action: 'upsert',
-                    nome: savedData.nome, // Mantém o nome original
-                    contato: savedData.contato, // Mantém o contato original
+                    nome: savedData.nome,
+                    contato: savedData.contato,
                     comparecera: isEditAttending ? 'Sim' : 'Não',
                     adultos: isEditAttending ? (parseInt(document.getElementById('edit-input-adultos').value) + 1).toString() : '0',
                     criancas: document.getElementById('edit-input-criancas').value,
@@ -751,7 +740,7 @@
                 
                 setTimeout(() => {
                     toggleEditModal(false);
-                    location.reload(); // Recarrega a página para mostrar os dados atualizados
+                    location.reload();
                 }, 800);
             };
 
@@ -766,17 +755,24 @@
                 <div id="edit-extra-fields" class="${isSim ? '' : 'hidden'}">
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="text-xs text-blue-200/50 block mb-2">Adultos (além de você)</label>
-                            <input type="number" id="edit-input-adultos" value="${Math.max(0, (parseInt(data.adultos) || 1) - 1)}" min="0" class="w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white">
+                            <label class="text-xs text-blue-200/50 block mb-2 text-center">Adultos (além de você)</label>
+                            <div class="flex items-center justify-between bg-blue-950/40 border border-blue-500/30 rounded-lg px-3 py-2">
+                                <button type="button" onclick="changeEditCount('adultos', -1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">-</button>
+                                <input id="edit-input-adultos" type="number" min="0" value="${Math.max(0, (parseInt(data.adultos) || 1) - 1)}" readonly class="w-8 bg-transparent text-center text-white font-serif text-xl outline-none">
+                                <button type="button" onclick="changeEditCount('adultos', 1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">+</button>
+                            </div>
                         </div>
                         <div>
-                            <label class="text-xs text-blue-200/50 block mb-2">Crianças (0-10 anos)</label>
-                            <input type="number" id="edit-input-criancas" value="${data.criancas || 0}" min="0" class="w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white">
+                            <label class="text-xs text-blue-200/50 block mb-2 text-center">Crianças (0-10 anos)</label>
+                            <div class="flex items-center justify-between bg-blue-950/40 border border-blue-500/30 rounded-lg px-3 py-2">
+                                <button type="button" onclick="changeEditCount('criancas', -1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">-</button>
+                                <input id="edit-input-criancas" type="number" min="0" value="${data.criancas || 0}" readonly class="w-8 bg-transparent text-center text-white font-serif text-xl outline-none">
+                                <button type="button" onclick="changeEditCount('criancas', 1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">+</button>
+                            </div>
                         </div>
                     </div>
-                    <div id="edit-companions-list">
-                        <label class="text-xs text-blue-200/50 block mb-2">Nome dos acompanhantes</label>
-                        ${companionsHTML}
+                    <div id="edit-companions-list" class="space-y-2">
+                        <!-- Companion inputs will be generated here -->
                     </div>
                 </div>
                 <div class="mt-8 flex justify-end gap-4">
@@ -784,6 +780,9 @@
                     <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-bold hover:bg-blue-500">Salvar Alterações</button>
                 </div>
             `;
+            
+            const initialNames = (data.acompanhantes && data.acompanhantes !== 'Nenhum') ? data.acompanhantes.split(', ') : [];
+            updateEditCompanionsList(initialNames);
         }
 
         function logout() { localStorage.removeItem('graduation_rsvp'); location.reload(); }
@@ -798,7 +797,48 @@
             document.getElementById('edit-btn-sim').className = val ? 'py-4 rounded-xl border border-blue-400 bg-blue-600 text-white font-bold uppercase text-xs shadow-lg' : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
             document.getElementById('edit-btn-nao').className = !val ? 'py-4 rounded-xl border border-red-400 bg-red-900/50 text-white font-bold uppercase text-xs shadow-lg' : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
             document.getElementById('edit-extra-fields').classList.toggle('hidden', !val);
+            if (val) {
+                updateEditCompanionsList();
+            }
         }
+        function changeEditCount(id, delta) {
+            const input = document.getElementById('edit-input-' + id);
+            if (!input) return;
+            input.value = Math.max(0, (parseInt(input.value) || 0) + delta);
+            if (id === 'adultos') {
+                updateEditCompanionsList();
+            }
+        }
+
+        function updateEditCompanionsList(initialNames = []) {
+            const adults = parseInt(document.getElementById('edit-input-adultos').value) || 0;
+            const container = document.getElementById('edit-companions-list');
+            if (!container) return;
+
+            const existingInputs = container.querySelectorAll('.companion-name-input-edit');
+            const existingValues = existingInputs.length > 0 
+                ? Array.from(existingInputs).map(input => input.value)
+                : initialNames;
+
+            container.innerHTML = '';
+
+            if (adults > 0) {
+                const label = document.createElement('label');
+                label.className = 'text-xs text-blue-200/50 block mb-2';
+                label.innerText = 'Nome dos acompanhantes adultos';
+                container.appendChild(label);
+
+                for (let i = 0; i < adults; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'companion-name-input-edit w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white placeholder-white/30 text-sm mb-2';
+                    input.placeholder = `Acompanhante ${i + 1}`;
+                    input.value = existingValues[i] || '';
+                    container.appendChild(input);
+                }
+            }
+        }
+
         function checkAdmin() {
             const pass = document.getElementById('admin-pass').value;
             if (btoa(pass) === 'dmFsZW50aW5hMjAyNg==') {
