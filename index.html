@@ -417,6 +417,9 @@
             const submitBtn = document.getElementById('btn-submit');
             const formTitle = document.getElementById('form-title');
             const contatoInput = document.getElementById('input-contato');
+            const nomeInput = document.getElementById('input-nome');
+            
+            nomeInput.readOnly = false; // Garante que o campo de nome esteja editável
 
             if (isLoginMode) {
                 regFields.classList.add('hidden');
@@ -667,6 +670,7 @@
                 console.error('Erro Geral:', err);
                 btn.disabled = false;
                 btn.innerText = originalText;
+                document.getElementById('input-nome').readOnly = false; // Desbloqueia o campo em caso de erro
                 alert('Ocorreu um erro de conexão. Por favor, tente novamente.');
             }
         }
@@ -679,18 +683,29 @@
         }
 
         function resetRSVP() {
-            // Limpa o estado local para permitir nova escolha
-            isAttending = null;
-            document.getElementById('btn-sim').className = 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
-            document.getElementById('btn-nao').className = 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
-            document.getElementById('extra-fields').classList.add('hidden');
+            isEditingMode = true; // Trata a ação como uma atualização
             
+            // Troca as telas
             document.getElementById('not-attending-screen').classList.add('hidden');
             document.getElementById('main-site').classList.add('hidden');
             document.getElementById('welcome-screen').classList.remove('hidden');
+
+            // Preenche o formulário com os dados salvos para facilitar
+            const savedData = localStorage.getItem('graduation_rsvp');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const nomeInput = document.getElementById('input-nome');
+                nomeInput.value = data.nome || '';
+                document.getElementById('input-contato').value = data.contato || '';
+                // Trava o campo de nome para garantir que o registro correto seja atualizado
+                nomeInput.readOnly = true; 
+            }
+            
+            // Reseta a seleção de presença
+            setAttendance(null);
             
             // Rola para o formulário
-            document.getElementById('rsvp-section').scrollIntoView({behavior: 'smooth'});
+            document.getElementById('rsvp-section').scrollIntoView({ behavior: 'smooth' });
         }
 
         function editRSVP() {
