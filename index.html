@@ -408,6 +408,7 @@
         let currentImageIndex = 0;
         let isAttending = null;
         let isLoginMode = false;
+        let isEditingMode = false;
 
         function toggleLoginMode() {
             isLoginMode = !isLoginMode;
@@ -557,6 +558,8 @@
         }
 
         async function handleRSVPSubmit(e) {
+            const isUpdateFlow = isEditingMode; // Captura o estado de edição
+            isEditingMode = false; // Reseta o estado para o próximo envio
             e.preventDefault();
             const nomeRaw = document.getElementById('input-nome').value;
             const nome = nomeRaw.trim();
@@ -604,16 +607,15 @@
                             else showNotAttendingScreen();
                         }, 500);
                         return;
-                    } else {
-                        // MODO REGISTRO: Pergunta se quer atualizar
-                        const confirmarUpdate = confirm('Você já possui um registro. Deseja atualizar seus dados com as novas informações?');
-                        if (!confirmarUpdate) {
-                            btn.innerText = originalText;
-                            btn.disabled = false;
-                            return;
-                        }
-                        // Se confirmou, o código continua para o POST abaixo
+                    } else if (!isUpdateFlow) {
+                        // É um novo registro com nome duplicado, então bloqueia e sugere login
+                        alert('Este nome já possui um registro. Por favor, acesse a área de login para entrar ou editar seus dados.');
+                        toggleLoginMode();
+                        btn.innerText = 'Entrar';
+                        btn.disabled = false;
+                        return;
                     }
+                    // Se for um fluxo de atualização (isUpdateFlow = true), o código simplesmente continua para a seção de POST abaixo.
                 }
 
                 // 3. REGISTRO / ATUALIZAÇÃO (POST)
@@ -644,21 +646,22 @@
                         headers: { 'Content-Type': 'text/plain' },
                         body: JSON.stringify(data)
                     });
-                    
-                    btn.innerText = 'Sucesso!';
-                    localStorage.setItem('graduation_rsvp', JSON.stringify(data));
-                    
-                    setTimeout(() => {
-                        if (isAttending) showMainSite(data);
-                        else showNotAttendingScreen();
-                    }, 800);
-
-                } catch (postErr) {
-                    console.error('Erro no POST:', postErr);
-                    localStorage.setItem('graduation_rsvp', JSON.stringify(data));
-                    if (isAttending) showMainSite(data);
-                    else showNotAttendingScreen();
+                } catch (err) {
+                    console.warn("Falha no envio para a planilha, mas salvo localmente.", err);
                 }
+
+                // A lógica de UI continua inalterada, garantindo que sempre execute
+                localStorage.setItem('graduation_rsvp', JSON.stringify(data));
+                btn.innerText = 'Sucesso!';
+
+                setTimeout(() => {
+                    if (data.comparecera === 'Sim') {
+                        showMainSite(data);
+                    } else {
+                        showNotAttendingScreen();
+                    }
+                }, 800);
+
 
             } catch (err) {
                 console.error('Erro Geral:', err);
@@ -693,44 +696,109 @@
         function editRSVP() {
             const savedData = localStorage.getItem('graduation_rsvp');
             if (!savedData) return;
-            
             const data = JSON.parse(savedData);
             
-            // Voltar para a tela de boas-vindas
-            document.getElementById('main-site').classList.add('hidden');
-            document.getElementById('welcome-screen').classList.remove('hidden');
-            
-            // Preencher o formulário
-            document.getElementById('input-nome').value = data.nome;
-            document.getElementById('input-contato').value = data.contato;
-            
+            // Abre o modal de edição
+            toggleEditModal(true);
+
+            // Popula o formulário do modal com os dados do 'data'
+            const editForm = document.getElementById('edit-form');
+            isEditAttending = data.comparecera === 'Sim';
             const isSim = data.comparecera === 'Sim';
-            setAttendance(isSim);
-            
+
+            let companionsHTML = '';
             if (isSim) {
-                // Ajustar contadores (lembrando que adultos no dado inclui o próprio convidado)
-                const adultosExtras = Math.max(0, (parseInt(data.adultos) || 1) - 1);
-                document.getElementById('input-adultos').value = adultosExtras;
-                document.getElementById('input-criancas').value = data.criancas || 0;
-                
-                updateCompanionsList();
-                
-                // Preencher nomes dos acompanhantes se existirem
-                if (data.acompanhantes && data.acompanhantes !== 'Nenhum') {
-                    const names = data.acompanhantes.split(', ');
-                    const inputs = document.querySelectorAll('.companion-name-input');
-                    names.forEach((name, i) => {
-                        if (inputs[i]) inputs[i].value = name;
-                    });
+                const names = (data.acompanhantes && data.acompanhantes !== 'Nenhum') ? data.acompanhantes.split(', ') : [];
+                const totalCompanions = Math.max(0, (parseInt(data.adultos) || 1) - 1);
+                for (let i = 0; i < totalCompanions; i++) {
+                    companionsHTML += `<input type="text" value="${names[i] || ''}" class="companion-name-input-edit w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white placeholder-white/30 text-sm mb-2" placeholder="Nome do acompanhante ${i + 1}">`;
                 }
             }
-            
-            // Scroll para o formulário
-            document.getElementById('rsvp-section').scrollIntoView({behavior: 'smooth'});
+
+            editForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = editForm.querySelector('button[type="submit"]');
+                btn.innerText = 'Salvando...';
+                btn.disabled = true;
+
+                const savedData = JSON.parse(localStorage.getItem('graduation_rsvp'));
+
+                const names = Array.from(document.querySelectorAll('.companion-name-input-edit')).map(i => i.value).filter(n => n.trim() !== '');
+                const updatedData = {
+                    action: 'upsert',
+                    nome: savedData.nome, // Mantém o nome original
+                    contato: savedData.contato, // Mantém o contato original
+                    comparecera: isEditAttending ? 'Sim' : 'Não',
+                    adultos: isEditAttending ? (parseInt(document.getElementById('edit-input-adultos').value) + 1).toString() : '0',
+                    criancas: document.getElementById('edit-input-criancas').value,
+                    acompanhantes: names.join(', ') || 'Nenhum',
+                    data_hora: new Date().toLocaleString('pt-BR')
+                };
+
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, { 
+                        method: 'POST', 
+                        mode: 'no-cors', 
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify(updatedData)
+                    });
+                } catch (err) {
+                    console.warn("Falha ao salvar na planilha, mas atualizando localmente.", err);
+                }
+
+                localStorage.setItem('graduation_rsvp', JSON.stringify(updatedData));
+                btn.innerText = 'Salvo!';
+                
+                setTimeout(() => {
+                    toggleEditModal(false);
+                    location.reload(); // Recarrega a página para mostrar os dados atualizados
+                }, 800);
+            };
+
+            editForm.innerHTML = `
+                <div class="mb-6">
+                    <p class="text-center text-blue-200/60 mb-4">Você irá comparecer?</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button type="button" id="edit-btn-sim" onclick="setEditAttendance(true)" class="${isSim ? 'py-4 rounded-xl border border-blue-400 bg-blue-600 text-white font-bold uppercase text-xs shadow-lg' : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50'}">Sim</button>
+                        <button type="button" id="edit-btn-nao" onclick="setEditAttendance(false)" class="${!isSim ? 'py-4 rounded-xl border border-red-400 bg-red-900/50 text-white font-bold uppercase text-xs shadow-lg' : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50'}">Não</button>
+                    </div>
+                </div>
+                <div id="edit-extra-fields" class="${isSim ? '' : 'hidden'}">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="text-xs text-blue-200/50 block mb-2">Adultos (além de você)</label>
+                            <input type="number" id="edit-input-adultos" value="${Math.max(0, (parseInt(data.adultos) || 1) - 1)}" min="0" class="w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-blue-200/50 block mb-2">Crianças (0-10 anos)</label>
+                            <input type="number" id="edit-input-criancas" value="${data.criancas || 0}" min="0" class="w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white">
+                        </div>
+                    </div>
+                    <div id="edit-companions-list">
+                        <label class="text-xs text-blue-200/50 block mb-2">Nome dos acompanhantes</label>
+                        ${companionsHTML}
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end gap-4">
+                    <button type="button" onclick="toggleEditModal(false)" class="bg-gray-700/50 text-white/60 px-6 py-3 rounded-lg text-sm font-bold hover:bg-gray-700/80">Cancelar</button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-bold hover:bg-blue-500">Salvar Alterações</button>
+                </div>
+            `;
         }
 
         function logout() { localStorage.removeItem('graduation_rsvp'); location.reload(); }
         function toggleAdmin() { document.getElementById('admin-modal').classList.toggle('hidden'); }
+        function toggleEditModal(show) {
+            document.getElementById('edit-modal').classList.toggle('hidden', !show);
+        }
+
+        let isEditAttending = null;
+        function setEditAttendance(val) {
+            isEditAttending = val;
+            document.getElementById('edit-btn-sim').className = val ? 'py-4 rounded-xl border border-blue-400 bg-blue-600 text-white font-bold uppercase text-xs shadow-lg' : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
+            document.getElementById('edit-btn-nao').className = !val ? 'py-4 rounded-xl border border-red-400 bg-red-900/50 text-white font-bold uppercase text-xs shadow-lg' : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
+            document.getElementById('edit-extra-fields').classList.toggle('hidden', !val);
+        }
         function checkAdmin() {
             const pass = document.getElementById('admin-pass').value;
             if (btoa(pass) === 'dmFsZW50aW5hMjAyNg==') {
@@ -743,31 +811,48 @@
         }
 
         function showMainSite(data) {
-            document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('not-attending-screen').classList.add('hidden');
-            document.getElementById('main-site').classList.remove('hidden');
-            
-            document.getElementById('user-name-display').innerText = data.nome;
-            document.getElementById('user-adults-display').innerText = data.adultos || 1;
-            document.getElementById('user-children-display').innerText = data.criancas || 0;
+            try {
+                const welcomeScreen = document.getElementById('welcome-screen');
+                const notAttendingScreen = document.getElementById('not-attending-screen');
+                const mainSite = document.getElementById('main-site');
+                const userName = document.getElementById('user-name-display');
+                const userAdults = document.getElementById('user-adults-display');
+                const userChildren = document.getElementById('user-children-display');
+                const companionsContainer = document.getElementById('user-companions-container');
+                const companionsDisplay = document.getElementById('user-companions-display');
 
-            const companionsContainer = document.getElementById('user-companions-container');
-            const companionsDisplay = document.getElementById('user-companions-display');
-            
-            if (data.acompanhantes && data.acompanhantes !== 'Nenhum') {
-                companionsContainer.classList.remove('hidden');
-                companionsDisplay.innerHTML = '';
-                data.acompanhantes.split(', ').forEach(name => {
-                    const span = document.createElement('span');
-                    span.className = 'bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] text-white/80 italic';
-                    span.innerText = name;
-                    companionsDisplay.appendChild(span);
-                });
-            } else {
-                companionsContainer.classList.add('hidden');
+                if (!welcomeScreen || !notAttendingScreen || !mainSite || !userName || !userAdults || !userChildren || !companionsContainer || !companionsDisplay) {
+                    console.error("Um ou mais elementos da UI principal não foram encontrados.");
+                    alert("Erro ao carregar a página de confirmação. Por favor, recarregue.");
+                    return;
+                }
+
+                welcomeScreen.classList.add('hidden');
+                notAttendingScreen.classList.add('hidden');
+                mainSite.classList.remove('hidden');
+
+                userName.innerText = data.nome || 'Convidado';
+                userAdults.innerText = data.adultos || 1;
+                userChildren.innerText = data.criancas || 0;
+
+                if (data.acompanhantes && data.acompanhantes !== 'Nenhum') {
+                    companionsContainer.classList.remove('hidden');
+                    companionsDisplay.innerHTML = '';
+                    data.acompanhantes.split(', ').forEach(name => {
+                        const span = document.createElement('span');
+                        span.className = 'bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] text-white/80 italic';
+                        span.innerText = name;
+                        companionsDisplay.appendChild(span);
+                    });
+                } else {
+                    companionsContainer.classList.add('hidden');
+                }
+
+                window.scrollTo(0, 0);
+            } catch (err) {
+                console.error("Erro dentro de showMainSite:", err);
+                alert("Ocorreu um erro inesperado ao exibir sua confirmação.");
             }
-            
-            window.scrollTo(0,0);
         }
 
         async function loadGuestList() {
@@ -838,5 +923,20 @@
             }
         }
     </script>
+
+    <!-- MODAL DE EDIÇÃO DE PRESENÇA -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-[#001d3d] max-w-lg w-full rounded-3xl border border-blue-500/20 shadow-2xl p-8 relative">
+            <button onclick="toggleEditModal(false)" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-blue-900/30 text-white/40 hover:bg-blue-800/50 hover:text-white transition-all flex items-center justify-center">&times;</button>
+            <h3 class="text-3xl font-serif text-white mb-6 text-center">Editar Minha Presença</h3>
+            
+            <form id="edit-form">
+                <!-- Conteúdo do formulário de edição virá aqui -->
+                <div class="text-center text-blue-200/40 italic py-10">
+                    (Carregando seus dados...)
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
