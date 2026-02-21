@@ -781,8 +781,11 @@
                 </div>
             `;
             
-            const initialNames = (data.acompanhantes && data.acompanhantes !== 'Nenhum') ? data.acompanhantes.split(', ') : [];
-            updateEditCompanionsList(initialNames);
+            const allNames = (data.acompanhantes && data.acompanhantes !== 'Nenhum') ? data.acompanhantes.split(', ') : [];
+            const adultCompanionsCount = Math.max(0, (parseInt(data.adultos) || 1) - 1);
+            const initialAdultNames = allNames.slice(0, adultCompanionsCount);
+            const initialChildNames = allNames.slice(adultCompanionsCount);
+            updateEditCompanionsList(initialAdultNames, initialChildNames);
         }
 
         function logout() { localStorage.removeItem('graduation_rsvp'); location.reload(); }
@@ -808,16 +811,18 @@
             updateEditCompanionsList();
         }
 
-        function updateEditCompanionsList(initialNames = []) {
+        function updateEditCompanionsList(initialAdultNames = [], initialChildNames = []) {
             const adults = parseInt(document.getElementById('edit-input-adultos').value) || 0;
             const children = parseInt(document.getElementById('edit-input-criancas').value) || 0;
             const container = document.getElementById('edit-companions-list');
             if (!container) return;
 
-            const existingInputs = container.querySelectorAll('.companion-name-input-edit');
-            const existingValues = existingInputs.length > 0 
-                ? Array.from(existingInputs).map(input => input.value)
-                : initialNames;
+            // Preserve existing values by type
+            const existingAdultInputs = container.querySelectorAll('.companion-name-input-edit[data-type="adult"]');
+            const existingChildInputs = container.querySelectorAll('.companion-name-input-edit[data-type="child"]');
+            
+            const adultValues = existingAdultInputs.length > 0 ? Array.from(existingAdultInputs).map(input => input.value) : initialAdultNames;
+            const childValues = existingChildInputs.length > 0 ? Array.from(existingChildInputs).map(input => input.value) : initialChildNames;
 
             container.innerHTML = '';
 
@@ -830,9 +835,10 @@
                 for (let i = 0; i < adults; i++) {
                     const input = document.createElement('input');
                     input.type = 'text';
+                    input.dataset.type = 'adult';
                     input.className = 'companion-name-input-edit w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white placeholder-white/30 text-sm mb-2';
                     input.placeholder = `Acompanhante Adulto ${i + 1}`;
-                    input.value = existingValues[i] || '';
+                    input.value = adultValues[i] || '';
                     container.appendChild(input);
                 }
             }
@@ -846,9 +852,10 @@
                 for (let i = 0; i < children; i++) {
                     const input = document.createElement('input');
                     input.type = 'text';
+                    input.dataset.type = 'child';
                     input.className = 'companion-name-input-edit w-full bg-blue-950/40 border border-blue-500/30 rounded-lg px-4 py-3 text-white placeholder-white/30 text-sm mb-2';
                     input.placeholder = `Criança ${i + 1}`;
-                    input.value = existingValues[adults + i] || '';
+                    input.value = childValues[i] || '';
                     container.appendChild(input);
                 }
             }
