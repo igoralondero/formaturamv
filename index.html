@@ -637,19 +637,14 @@
                     data_hora: new Date().toLocaleString('pt-BR')
                 };
 
-                const postController = new AbortController();
-                const postTimeout = setTimeout(() => postController.abort(), 15000);
-
                 try {
                     await fetch(GOOGLE_SCRIPT_URL, { 
                         method: 'POST', 
                         mode: 'no-cors', 
                         headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify(data),
-                        signal: postController.signal
+                        body: JSON.stringify(data)
                     });
                     
-                    clearTimeout(postTimeout);
                     btn.innerText = 'Sucesso!';
                     localStorage.setItem('graduation_rsvp', JSON.stringify(data));
                     
@@ -659,9 +654,7 @@
                     }, 800);
 
                 } catch (postErr) {
-                    clearTimeout(postTimeout);
                     console.error('Erro no POST:', postErr);
-                    // Mesmo com erro de rede, salvamos local para fluidez
                     localStorage.setItem('graduation_rsvp', JSON.stringify(data));
                     if (isAttending) showMainSite(data);
                     else showNotAttendingScreen();
@@ -675,31 +668,26 @@
             }
         }
 
-        function showMainSite(data) {
+        function showNotAttendingScreen() {
             document.getElementById('welcome-screen').classList.add('hidden');
-            document.getElementById('main-site').classList.remove('hidden');
-            
-            document.getElementById('user-name-display').innerText = data.nome;
-            document.getElementById('user-adults-display').innerText = data.adultos || 1;
-            document.getElementById('user-children-display').innerText = data.criancas || 0;
-
-            const companionsContainer = document.getElementById('user-companions-container');
-            const companionsDisplay = document.getElementById('user-companions-display');
-            
-            if (data.acompanhantes && data.acompanhantes !== 'Nenhum') {
-                companionsContainer.classList.remove('hidden');
-                companionsDisplay.innerHTML = '';
-                data.acompanhantes.split(', ').forEach(name => {
-                    const span = document.createElement('span');
-                    span.className = 'bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] text-white/80 italic';
-                    span.innerText = name;
-                    companionsDisplay.appendChild(span);
-                });
-            } else {
-                companionsContainer.classList.add('hidden');
-            }
-            
+            document.getElementById('main-site').classList.add('hidden');
+            document.getElementById('not-attending-screen').classList.remove('hidden');
             window.scrollTo(0,0);
+        }
+
+        function resetRSVP() {
+            // Limpa o estado local para permitir nova escolha
+            isAttending = null;
+            document.getElementById('btn-sim').className = 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
+            document.getElementById('btn-nao').className = 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
+            document.getElementById('extra-fields').classList.add('hidden');
+            
+            document.getElementById('not-attending-screen').classList.add('hidden');
+            document.getElementById('main-site').classList.add('hidden');
+            document.getElementById('welcome-screen').classList.remove('hidden');
+            
+            // Rola para o formulário
+            document.getElementById('rsvp-section').scrollIntoView({behavior: 'smooth'});
         }
 
         function editRSVP() {
