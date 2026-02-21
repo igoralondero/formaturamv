@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formatura Maria Valentina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --navy: #000814;
+        --navy-light: #001d3d;
+        --medium-blue: #3b82f6;
+      }
+
+      html {
+        background-color: var(--navy);
+        overscroll-behavior: none;
+      }
+
+      body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: var(--navy);
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overscroll-behavior: none;
+      }
+
+      .font-serif { font-family: 'Cinzel', serif; }
+      .font-sans { font-family: 'Montserrat', sans-serif; }
+
+      .tracking-luxury { letter-spacing: 0.3em; }
+      .tracking-ultra { letter-spacing: 0.6em; }
+
+      .bg-navy-gradient {
+        background: radial-gradient(circle at center, #001d3d 0%, #000814 100%);
+      }
+      .bg-blue-accent {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      }
+      
+      .text-shadow-premium {
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+      }
+
+      /* Scroll Reveal Classes */
+      .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform, opacity;
+      }
+
+      .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(3deg); }
+      }
+
+      .animate-butterfly {
+        animation: float 5s ease-in-out infinite;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #000814; }
+      ::-webkit-scrollbar-thumb { background: #1e3a8a; border-radius: 10px; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-[#000814] text-white selection:bg-blue-500 selection:text-white">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

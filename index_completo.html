@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formatura Maria Valentina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
+    
+    <!-- Configuração do Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Montserrat', 'sans-serif'],
+                    },
+                    letterSpacing: {
+                        luxury: '0.3em',
+                        ultra: '0.6em',
+                    },
+                    colors: {
+                        navy: '#000814',
+                        'blue-accent': '#1e3a8a',
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --navy: #000814;
+        }
+        body {
+            background-color: var(--navy);
+            color: rgba(255, 255, 255, 0.9);
+            -webkit-font-smoothing: antialiased;
+        }
+        .bg-navy-gradient {
+            background: radial-gradient(circle at center, #001d3d 0%, #000814 100%);
+        }
+        .text-shadow-premium {
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Esconder scrollbar mas permitir scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-[#000814] text-white overflow-x-hidden">
+
+    <!-- ESTADO DA APLICAÇÃO (Gerenciado via JS) -->
+    <div id="app">
+        
+        <!-- TELA 1: HERO E FORMULÁRIO (Visível se não logado) -->
+        <div id="welcome-screen">
+            <!-- Hero Section -->
+            <div class="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden bg-navy-gradient">
+                <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                    <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-900/10 blur-[150px] rounded-full"></div>
+                    <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-600/10 blur-[150px] rounded-full"></div>
+                </div>
+
+                <div class="relative z-20 max-w-6xl w-full flex flex-col items-center justify-center space-y-10 animate-[fadeIn_1s_ease-out]">
+                    <div class="flex items-center gap-6">
+                        <div class="h-[1px] w-16 bg-gradient-to-r from-transparent to-blue-500/50"></div>
+                        <span class="text-blue-400 font-sans text-xs tracking-ultra uppercase font-bold">Psicologia 2026</span>
+                        <div class="h-[1px] w-16 bg-gradient-to-l from-transparent to-blue-500/50"></div>
+                    </div>
+                    
+                    <h1 class="text-5xl sm:text-7xl md:text-8xl lg:text-[9rem] font-serif text-white tracking-tighter leading-[0.9] text-shadow-premium">
+                        Maria <span class="text-white block sm:inline italic font-medium">Valentina</span>
+                    </h1>
+
+                    <!-- Logo Imagem -->
+                    <div class="w-56 h-40 md:w-96 md:h-64 flex items-center justify-center">
+                        <img src="https://i.imgur.com/tlyqJn0.png" alt="Logo Maria Valentina" class="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                    </div>
+
+                    <p class="text-sm md:text-base text-blue-100/40 font-sans font-light max-w-lg mx-auto leading-relaxed italic px-4">
+                        "Conheça todas as teorias, domine todas as técnicas, mas ao tocar uma alma humana, seja apenas outra alma humana"
+                    </p>
+
+                    <button onclick="document.getElementById('rsvp-section').scrollIntoView({behavior: 'smooth'})" class="group bg-blue-900 text-white px-12 py-4 rounded-full font-sans font-bold uppercase tracking-luxury text-xs hover:scale-105 transition-all shadow-2xl border border-blue-400/20 relative overflow-hidden">
+                        <span class="relative z-10">Confirmar Presença</span>
+                        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RSVP Section -->
+            <div id="rsvp-section" class="relative py-20 pb-32 px-4 flex flex-col items-center overflow-hidden bg-[#000814]">
+                <form id="rsvp-form" onsubmit="handleRSVPSubmit(event)" class="w-full max-w-2xl bg-[#001d3d]/20 backdrop-blur-3xl p-8 md:p-16 rounded-[3rem] border border-blue-500/10 shadow-2xl relative">
+                    <div class="text-center mb-12">
+                        <p class="text-blue-400/60 font-sans text-xs uppercase tracking-ultra font-bold">Registro de Presença</p>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-sans font-bold text-blue-400 uppercase tracking-luxury pl-2">Nome Completo</label>
+                            <input id="input-nome" required type="text" class="w-full bg-[#000814]/80 border border-blue-500/20 rounded-xl px-6 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-blue-900/30 font-sans" placeholder="Digite seu nome...">
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-sans font-bold text-blue-400 uppercase tracking-luxury pl-2">Contato (Email ou Whats)</label>
+                            <input id="input-contato" required type="text" class="w-full bg-[#000814]/80 border border-blue-500/20 rounded-xl px-6 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-blue-900/30 font-sans" placeholder="Seu contato...">
+                        </div>
+
+                        <div class="py-6 border-y border-blue-500/10 space-y-6">
+                            <p class="text-center text-xs font-bold uppercase tracking-widest text-blue-200/60">Você irá comparecer?</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button type="button" onclick="setAttendance(true)" id="btn-sim" class="py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 transition-all">SIM</button>
+                                <button type="button" onclick="setAttendance(false)" id="btn-nao" class="py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 transition-all">NÃO</button>
+                            </div>
+                        </div>
+
+                        <!-- Campos Extras (Escondidos por padrão) -->
+                        <div id="extra-fields" class="hidden space-y-6 animate-[fadeIn_0.5s_ease-out]">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-2 text-center">Adultos Extras</label>
+                                    <div class="flex items-center justify-between bg-[#000814]/60 border border-blue-500/20 rounded-xl px-3 py-2">
+                                        <button type="button" onclick="changeCount('adultos', -1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">-</button>
+                                        <input id="input-adultos" type="number" min="0" value="0" readonly class="w-8 bg-transparent text-center text-white font-serif text-xl outline-none">
+                                        <button type="button" onclick="changeCount('adultos', 1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">+</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-2 text-center">Crianças</label>
+                                    <div class="flex items-center justify-between bg-[#000814]/60 border border-blue-500/20 rounded-xl px-3 py-2">
+                                        <button type="button" onclick="changeCount('criancas', -1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">-</button>
+                                        <input id="input-criancas" type="number" min="0" value="0" readonly class="w-8 bg-transparent text-center text-white font-serif text-xl outline-none">
+                                        <button type="button" onclick="changeCount('criancas', 1)" class="text-blue-400 text-lg font-bold w-8 h-8 flex items-center justify-center hover:bg-blue-500/10 rounded-lg">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="companions-list" class="space-y-3"></div>
+                        </div>
+
+                        <button type="submit" id="btn-submit" class="w-full bg-white text-blue-950 py-5 rounded-xl font-bold uppercase tracking-widest text-xs hover:scale-[1.01] transition-all shadow-xl">
+                            Confirmar
+                        </button>
+                    </div>
+                </form>
+                
+                <button onclick="toggleAdmin()" class="mt-16 text-[10px] text-blue-300/60 hover:text-white border border-blue-500/20 px-6 py-3 rounded-full uppercase tracking-[0.3em] font-bold transition-all hover:bg-blue-500/10 hover:border-blue-500/50">
+                    Área Administrativa
+                </button>
+            </div>
+        </div>
+
+        <!-- TELA 2: SITE PRINCIPAL (Visível após login/confirmação) -->
+        <div id="main-site" class="hidden">
+            <!-- Navbar -->
+            <nav class="sticky top-0 z-50 bg-[#000814]/95 backdrop-blur-md border-b border-blue-900/20 py-4 px-6 flex justify-between items-center">
+                <img src="https://i.imgur.com/tlyqJn0.png" alt="Logo MV" class="h-8">
+                <div class="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
+                    <a href="#home" class="text-blue-400">Home</a>
+                    <a href="#minha-presenca" class="text-white/60 hover:text-white">Presença</a>
+                    <a href="#evento" class="text-white/60 hover:text-white">Evento</a>
+                    <a href="#local" class="text-white/60 hover:text-white">Local</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleAdmin()" class="text-blue-400/60 hover:text-blue-400 text-[10px] uppercase font-bold tracking-widest">Admin</button>
+                    <button onclick="logout()" class="text-red-400/60 hover:text-red-400 text-[10px] uppercase font-bold tracking-widest">Sair</button>
+                </div>
+            </nav>
+
+             <!-- Home Logada -->
+            <section id="home" class="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-navy-gradient">
+                <p class="text-blue-400/60 font-sans text-xs uppercase tracking-ultra font-bold mb-10">Contagem Regressiva Para o Grande Dia</p>
+                <h1 class="text-4xl md:text-7xl font-serif text-white mb-8">Presença Confirmada!</h1>
+                <div class="grid grid-cols-4 gap-4 md:gap-8 mb-12">
+                    <div class="bg-blue-900/20 p-4 rounded-2xl border border-blue-500/20 w-16 md:w-24 aspect-square flex flex-col items-center justify-center">
+                        <span id="days" class="text-2xl md:text-4xl font-serif">00</span>
+                        <span class="text-[8px] uppercase">Dias</span>
+                    </div>
+                    <div class="bg-blue-900/20 p-4 rounded-2xl border border-blue-500/20 w-16 md:w-24 aspect-square flex flex-col items-center justify-center">
+                        <span id="hours" class="text-2xl md:text-4xl font-serif">00</span>
+                        <span class="text-[8px] uppercase">Horas</span>
+                    </div>
+                    <div class="bg-blue-900/20 p-4 rounded-2xl border border-blue-500/20 w-16 md:w-24 aspect-square flex flex-col items-center justify-center">
+                        <span id="mins" class="text-2xl md:text-4xl font-serif">00</span>
+                        <span class="text-[8px] uppercase">Min</span>
+                    </div>
+                    <div class="bg-blue-900/20 p-4 rounded-2xl border border-blue-500/20 w-16 md:w-24 aspect-square flex flex-col items-center justify-center">
+                        <span id="secs" class="text-2xl md:text-4xl font-serif">00</span>
+                        <span class="text-[8px] uppercase">Seg</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Minha Presença -->
+            <section id="minha-presenca" class="py-20 px-6 bg-[#00040a]">
+                 <div class="bg-[#001d3d]/40 p-8 rounded-3xl border border-blue-500/20 max-w-md w-full text-left mx-auto">
+                    <h3 id="user-name-display" class="text-2xl font-serif mb-2">Convidado</h3>
+                    <p class="text-blue-400 text-xs uppercase tracking-widest mb-6">Status: Confirmado</p>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-blue-950/50 p-4 rounded-xl">
+                            <span id="user-adults-display" class="block text-2xl font-serif">0</span>
+                            <span class="text-[8px] uppercase text-white/40">Adultos</span>
+                        </div>
+                        <div class="bg-blue-950/50 p-4 rounded-xl">
+                            <span id="user-children-display" class="block text-2xl font-serif">0</span>
+                            <span class="text-[8px] uppercase text-white/40">Crianças</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Evento -->
+            <section id="evento" class="py-20 px-6 bg-[#00040a]">
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-8">
+                        <div class="p-8 bg-blue-900/10 rounded-3xl border border-blue-500/10">
+                            <h3 class="text-2xl font-serif mb-2">21 de Março</h3>
+                            <p class="text-blue-400 text-xs uppercase tracking-widest">Sábado • 20:30h</p>
+                        </div>
+                        <div class="p-8 bg-blue-900/10 rounded-3xl border border-blue-500/10">
+                            <h3 class="text-2xl font-serif mb-2">Clube Comercial</h3>
+                            <p class="text-blue-400 text-xs uppercase tracking-widest">Catuípe • RS</p>
+                        </div>
+                    </div>
+                    <div class="h-[400px] bg-blue-900/20 rounded-[3rem] overflow-hidden relative group">
+                        <img id="carousel-img" src="https://i.imgur.com/obTc9mr.jpeg" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-all duration-700" alt="Foto 1" style="transition: opacity 0.5s ease-in-out;">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-8 flex flex-col justify-end">
+                            <h4 class="text-2xl font-serif text-white mb-2">Maria Valentina</h4>
+                            <p class="text-blue-300/70 text-sm">Bacharel em Psicologia</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Local -->
+            <section id="local" class="py-20 px-6 bg-[#000814]">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-4xl font-serif mb-10">Localização</h2>
+                    <div class="h-[400px] rounded-[3rem] overflow-hidden border border-blue-500/20 relative">
+                        <iframe 
+                            src="https://maps.google.com/maps?q=Clube+Comercial+Catuípe+RS&t=&z=17&ie=UTF8&iwloc=&output=embed" 
+                            width="100%" height="100%" 
+                            style="border:0; filter: invert(90%) hue-rotate(180deg) brightness(0.9) contrast(1.2);" 
+                            allowfullscreen="" loading="lazy">
+                        </iframe>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=Clube+Comercial+Catuípe+RS" target="_blank" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest shadow-xl hover:bg-blue-500 transition-colors">
+                            Traçar Rota
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- MODAL ADMIN -->
+        <div id="admin-modal" class="hidden fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-6">
+            <div class="w-full max-w-md bg-[#001d3d] border border-blue-500/20 p-8 rounded-3xl relative">
+                <button onclick="toggleAdmin()" class="absolute top-4 right-4 text-white/40 hover:text-white">✕</button>
+                <h2 class="text-2xl font-serif mb-6 text-center">Acesso Restrito</h2>
+                <input id="admin-pass" type="password" placeholder="Senha" class="w-full bg-black/40 border border-blue-500/20 rounded-xl px-4 py-3 mb-4 text-white">
+                <button onclick="checkAdmin()" class="w-full bg-blue-600 py-3 rounded-xl font-bold uppercase text-xs">Entrar</button>
+                <p id="admin-error" class="text-red-400 text-xs text-center mt-4 hidden">Senha incorreta</p>
+                
+                <!-- Conteúdo Admin (Só aparece se senha ok) -->
+                <div id="admin-content" class="hidden mt-8 pt-8 border-t border-white/10">
+                    <a href="https://docs.google.com/spreadsheets/d/1GPPD4VvLTwxDnANE_X7QB5UIZHfdNusx0EEsHiJKq_w/edit" target="_blank" class="block w-full bg-green-700 text-center py-3 rounded-xl font-bold uppercase text-xs mb-4">
+                        Abrir Planilha Google
+                    </a>
+                    <p class="text-center text-xs text-white/40">Para gerenciar convidados, use a planilha diretamente.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        // CONFIGURAÇÃO
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAX_VjK_mMIw_vYczPNkfGIlT7fAuaMBcnAkmDd5UnsiqgfUmVcso5rlBiUCvn0nXC/exec';
+        const EVENT_DATE = new Date('2026-03-21T20:30:00').getTime();
+        let isAttending = null;
+
+        // CARROSSEL DE IMAGENS
+        const carouselImages = [
+            "https://i.imgur.com/obTc9mr.jpeg",
+            "https://i.imgur.com/68Ba0yL.jpeg"
+        ];
+        let currentImageIndex = 0;
+
+        function startCarousel() {
+            const imgElement = document.getElementById('carousel-img');
+            if (!imgElement) return;
+
+            setInterval(() => {
+                currentImageIndex = (currentImageIndex + 1) % carouselImages.length;
+                imgElement.style.opacity = 0; // Fade out
+                setTimeout(() => {
+                    imgElement.src = carouselImages[currentImageIndex];
+                    imgElement.style.opacity = 0.8; // Fade in
+                }, 500); // Tempo para a imagem trocar antes do fade in
+            }, 4000);
+        }
+
+        // INICIALIZAÇÃO
+        window.onload = function() {
+            const savedData = localStorage.getItem('graduation_rsvp');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                showMainSite(data);
+            }
+            startCountdown();
+            startCarousel();
+        };
+
+        // LÓGICA DE RSVP
+        function changeCount(id, delta) {
+            const input = document.getElementById('input-' + id);
+            let val = parseInt(input.value) || 0;
+            val = Math.max(0, val + delta);
+            input.value = val;
+            updateCompanionsList();
+        }
+
+        function updateCompanionsList() {
+            const adults = parseInt(document.getElementById('input-adultos').value) || 0;
+            const children = parseInt(document.getElementById('input-criancas').value) || 0;
+            const container = document.getElementById('companions-list');
+            container.innerHTML = '';
+
+            if (adults > 0 || children > 0) {
+                const label = document.createElement('label');
+                label.className = 'text-[9px] font-bold text-blue-400 uppercase tracking-widest block pl-2';
+                label.innerText = 'Nomes dos Acompanhantes';
+                container.appendChild(label);
+
+                for (let i = 0; i < adults; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'w-full bg-[#000814]/60 border border-blue-500/20 rounded-xl px-4 py-3 text-white text-sm companion-name-input';
+                    input.placeholder = `Nome do Adulto ${i + 1}`;
+                    container.appendChild(input);
+                }
+
+                for (let i = 0; i < children; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'w-full bg-[#000814]/60 border border-blue-500/20 rounded-xl px-4 py-3 text-white text-sm companion-name-input';
+                    input.placeholder = `Nome da Criança ${i + 1}`;
+                    container.appendChild(input);
+                }
+            }
+        }
+
+        function setAttendance(val) {
+            isAttending = val;
+            document.getElementById('btn-sim').className = val 
+                ? 'py-4 rounded-xl border border-blue-400 bg-blue-600 text-white font-bold uppercase text-xs shadow-lg' 
+                : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
+            
+            document.getElementById('btn-nao').className = !val 
+                ? 'py-4 rounded-xl border border-red-400 bg-red-900/50 text-white font-bold uppercase text-xs shadow-lg' 
+                : 'py-4 rounded-xl border border-blue-500/20 font-bold uppercase text-xs hover:bg-blue-500/10 text-white/50';
+
+            const extraFields = document.getElementById('extra-fields');
+            if (val) {
+                extraFields.classList.remove('hidden');
+            } else {
+                extraFields.classList.add('hidden');
+            }
+        }
+
+        async function handleRSVPSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            
+            if (isAttending === null) {
+                alert('Por favor, selecione SIM ou NÃO.');
+                return;
+            }
+
+            btn.innerText = 'Enviando...';
+            btn.disabled = true;
+
+            const companionInputs = document.querySelectorAll('.companion-name-input');
+            const companionNames = Array.from(companionInputs).map(input => input.value).filter(name => name.trim() !== '');
+
+            const data = {
+                action: 'upsert',
+                timestamp: new Date().toLocaleString('pt-BR'),
+                nome: document.getElementById('input-nome').value,
+                contato: document.getElementById('input-contato').value,
+                comparecera: isAttending ? 'Sim' : 'Não',
+                adultos: isAttending ? (parseInt(document.getElementById('input-adultos').value) + 1).toString() : '0',
+                criancas: document.getElementById('input-criancas').value,
+                acompanhantes: companionNames.join(', ') || 'Nenhum'
+            };
+
+            try {
+                // Envio com no-cors (não espera resposta JSON para evitar erro de bloqueio)
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                // Sucesso simulado (já que no-cors não retorna status)
+                localStorage.setItem('graduation_rsvp', JSON.stringify(data));
+                
+                if (isAttending) {
+                    showMainSite(data);
+                } else {
+                    alert('Obrigado por responder! Uma pena que não poderá vir.');
+                    location.reload();
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao enviar. Tente novamente.');
+                btn.innerText = 'CONFIRMAR';
+                btn.disabled = false;
+            }
+        }
+
+        function showMainSite(data) {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('main-site').classList.remove('hidden');
+            
+            // Preencher dados na home
+            document.getElementById('user-name-display').innerText = data.nome;
+            document.getElementById('user-adults-display').innerText = data.adultos || 1;
+            document.getElementById('user-children-display').innerText = data.criancas || 0;
+            
+            window.scrollTo(0,0);
+        }
+
+        function logout() {
+            localStorage.removeItem('graduation_rsvp');
+            location.reload();
+        }
+
+        // ADMIN
+        function toggleAdmin() {
+            const modal = document.getElementById('admin-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function checkAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            // A senha 'valentina2026' codificada em Base64 é 'dmFsZW50aW5hMjAyNg=='
+            // Isso impede a leitura direta, mas não é uma segurança de nível bancário.
+            if (btoa(pass) === 'dmFsZW50aW5hMjAyNg==') {
+                document.getElementById('admin-content').classList.remove('hidden');
+                document.getElementById('admin-error').classList.add('hidden');
+                // Ocultar campo de senha após sucesso
+                document.getElementById('admin-pass').classList.add('hidden');
+                document.querySelector('button[onclick="checkAdmin()"]').classList.add('hidden');
+            } else {
+                document.getElementById('admin-error').classList.remove('hidden');
+            }
+        }
+
+        // CONTAGEM REGRESSIVA
+        function startCountdown() {
+            setInterval(() => {
+                const now = new Date().getTime();
+                const distance = EVENT_DATE - now;
+
+                if (distance < 0) return;
+
+                document.getElementById('days').innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+                document.getElementById('hours').innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                document.getElementById('mins').innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                document.getElementById('secs').innerText = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
